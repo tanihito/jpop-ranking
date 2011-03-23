@@ -1,0 +1,9 @@
+setup.cfg
+setup.py
+jpop/__init__.py
+jpop.egg-info/PKG-INFO
+jpop.egg-info/SOURCES.txt
+jpop.egg-info/dependency_links.txt
+jpop.egg-info/entry_points.txt
+jpop.egg-info/not-zip-safe
+jpop.egg-info/top_level.txt

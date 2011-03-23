@@ -1,0 +1,32 @@
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="application/xhtml+xml; charset=utf-8"/>
+    <link rel="stylesheet"  type="text/css" href="{{ url_for('static', filename='jpop.css') }}" />
+    <title>Jpopランキング</title>
+  </head>
+  <body>
+    <h1>Jpopランキング</h1>
+    <ul id="jpop-ranking">
+      {% for song in songs %}
+      <li><h2>{{ song.rank}}位　{{ song.title }}</h2></li>
+      <li>
+        <object class="youtube">
+          <param name="movie" value="{{ song.youtube }}" />
+          <param name="allowFullScreen" value="true" />
+          <param name="allowScriptAccess" value="always" />
+          <embed src="{{ song.youtube }}" type="application/x-shockwave-flash" allowfullscreen="true" allowScriptAccess="always" width="640" height="390" />
+        </object>
+      </li>
+      <li>
+        <div class="lyric">
+          <br />
+          {% for line in song.lines %}
+            {{ line }}<br />
+          {% endfor %}
+          <br />  
+        </div>
+      </li>
+      {% endfor %}
+    </ul>
+  </body>
+</html>

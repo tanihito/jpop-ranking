@@ -1,0 +1,32 @@
+*{
+    margin: 0;
+    padding: 0;
+    list-style-type: none;
+    border: none;
+}
+
+body{
+    padding: 30px 100px 30px;
+}
+
+h1{
+    font-weight: bolder;
+    text-align:center;
+    margin: 0;
+    padding: 0;    
+}
+h2{
+    font-size: 1.4em;
+    margin: 10px 0px 0px;
+    padding: 10px 10px 10px;
+}
+
+.lyric{
+    height:310px;
+    width: 640px;
+    overflow-y:scroll;
+}
+.youtube{
+    height: 390px;
+    width: 640px;
+}

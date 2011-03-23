@@ -1,0 +1,4 @@
+# -*- coding: utf-8 -*-
+from jpop import app
+from wsgiref.handlers import CGIHandler
+CGIHandler().run(app)

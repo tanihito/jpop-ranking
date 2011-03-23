@@ -1,3 +1,4 @@
+#!${buildout:bin-directory}/mypy
 # -*- coding: utf-8 -*-
 from jpop import app
 from wsgiref.handlers import CGIHandler

@@ -9,11 +9,7 @@ from contextlib import closing
 import sqlite3
 from flask import Flask
 from flask import render_template
-
-# TODO
-# DB処理のwrapperを作成
-# キャッシュのwrapperを作成
-# 公開のための設定
+from flask import g
 
 # configuration
 DATABASE   = 'jpop.db'
@@ -38,7 +34,15 @@ def init_db():
             db.cursor().executescript(f.read())
         db.commit()
 
-        
+@app.before_request
+def before_request():
+    g.db = connect_db()
+
+@app.after_request
+def after_request(response):
+    g.db.close()
+    return response
+
 @app.route('/')
 def show_ranking():
     songs = get_ranking(NUM_SONGS)
@@ -52,13 +56,11 @@ def get_ranking(num_songs=10):
     return ranking
 
 def get_ranking_fr_db(num_songs, date):
-    db = connect_db()
     sql  = "SELECT ranking.utamap_id, title, artist, lyric, youtube, rank FROM ranking "
     sql += "LEFT OUTER JOIN songs ON (ranking.utamap_id = songs.utamap_id) "
     sql += "WHERE ranking.crawl_date = '%s' " % str(date)
-    cur = db.execute(sql)
+    cur = g.db.execute(sql)
     rows = cur.fetchall()
-    db.close()
     if rows != [] and len(rows) >= num_songs:
         songs = [dict(utamap_id=row[0], title=row[1], artist=row[2], lyric=row[3], youtube=row[4], rank=row[5], lines=row[3].split("\n")) for row in rows]
         return songs
@@ -89,10 +91,8 @@ def get_ranking_fr_web(num_songs, date):
     return songs
     
 def get_song_fr_db(utamap_id):
-    db = connect_db()
-    cur = db.execute("SELECT title, artist, lyric, youtube, utamap_id FROM songs WHERE utamap_id = '%s'" % utamap_id)
+    cur = g.db.execute("SELECT title, artist, lyric, youtube, utamap_id FROM songs WHERE utamap_id = '%s'" % utamap_id)
     rows = cur.fetchall()
-    db.close()
     if rows == []:
         return None
     else:
@@ -101,30 +101,22 @@ def get_song_fr_db(utamap_id):
         return song
 
 def save_song(song):
-    db = connect_db()
-    db.execute('INSERT INTO songs (utamap_id, title, lyric, artist, youtube) values (?, ?, ?, ?, ?)',
+    g.db.execute('INSERT INTO songs (utamap_id, title, lyric, artist, youtube) values (?, ?, ?, ?, ?)',
                  [song['utamap_id'], song['title'], song['lyric'], song['artist'], song['youtube']])
-    db.commit()
-    db.close()
+    g.db.commit()
 
 def save_rank(song):
-    db = connect_db()
     today = datetime.date.today()
-    db.execute('INSERT INTO ranking (crawl_date, rank, utamap_id) values (?, ?, ?)',
+    g.db.execute('INSERT INTO ranking (crawl_date, rank, utamap_id) values (?, ?, ?)',
                  [str(today), song['rank'], song['utamap_id']])
-    db.commit()
-    db.close()
+    g.db.commit()
 
 def get_lyric(song_id):
-    """歌詞を取得"""
     src = urllib.urlopen(LYRIC_URL+song_id).read()
     lyric = re.split('(test2=)', src)[2]
     return lyric.decode('utf-8')
     
 def get_youtube(search_terms):
-    """
-    Return the URL for the embeddable Video
-    """
     yt_service = gdata.youtube.service.YouTubeService()
     query = gdata.youtube.service.YouTubeVideoQuery()
     query.vq = search_terms
